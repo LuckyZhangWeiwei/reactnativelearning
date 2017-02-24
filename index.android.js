@@ -253,6 +253,11 @@ var {width}=Dimensions.get('window');
 var ImageData=require('./ImageData.json');
 var FScrollViewDemo1=React.createClass({
     mixins:[TimerMixin],
+    getDefaultProps(){
+        return {
+            duration:3000
+        }
+    },
     getInitialState(){
         return{
             currentPage:0
@@ -262,10 +267,13 @@ var FScrollViewDemo1=React.createClass({
         return (
             <View style={FScrollViewDemo1Styles.container}>
               <ScrollView 
+                 ref="scrollView"
                  horizontal={true}
                  showsHorizontalScrollIndicator={false}
                  pagingEnabled={true}
                  onMomentumScrollEnd={(e)=>this.onAnimationEnd(e)}
+                 onScrollBeginDrag={this.onScrollBeginDrag}
+                 onScrollEndDrag={this.onScrollEndDrag}
                  >
                 {this.renderAllImage()}
               </ScrollView>
@@ -274,6 +282,36 @@ var FScrollViewDemo1=React.createClass({
                </View>
             </View>
             );
+},
+componentDidMount(){
+this.startTimer();
+},
+onScrollBeginDrag(){
+    this.clearInterval(this.timer);
+},
+onScrollEndDrag(){
+    this.startTimer();
+},
+startTimer(){
+    var scrollView=this.refs.scrollView;
+    var imgsCount=ImageData.data.length;
+    this.timer=this.setInterval(function(){
+       var activePage=0;
+       if((this.state.currentPage+1)>=imgsCount){
+           activePage=0;
+       }else{
+           activePage=this.state.currentPage+1;
+       }
+       this.setState({
+         currentPage:activePage
+       });
+       var offsetX=activePage*width;
+       scrollView.scrollResponderScrollTo({
+           x:offsetX,
+           y:0,
+           animated:true
+       });
+   },this.props.duration); 
 },
 renderAllImage(){
     var allImage=[];
