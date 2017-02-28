@@ -13,7 +13,10 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  ScrollView
+  ScrollView,
+  ListView,
+  Alert,
+  NativeModules
 } from 'react-native';
 
 
@@ -359,4 +362,291 @@ const FScrollViewDemo1Styles=StyleSheet.create({
         alignItems:'center'
     }
 });
-AppRegistry.registerComponent('AwesomeProject3', () => FScrollViewDemo1);
+/**********************************************************************/
+// 导入json数据
+var Wine = require('./Wine1.json'); // 数组
+
+var Dimensions = require('Dimensions');
+var {width} = Dimensions.get('window');
+
+var GListViewDemo = React.createClass({
+    // 设置初始值
+    getInitialState(){
+        // 1.1 设置数据源
+        var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+        // 1.2 设置返回数据
+        return{
+            dataSource: ds.cloneWithRows(Wine)  // cloneWithRows 放置数组
+        }
+    },
+
+    // 设置render函数
+    render(){
+        return(
+           <ListView
+               dataSource={this.state.dataSource}  // 数据源
+             renderRow={this.renderRow}
+         />
+      );
+},
+
+// 返回具体的cell
+renderRow(rowData,sectionID,rowID,highlightRow){
+    return(
+      <TouchableOpacity activeOpacity={0.5}   onPress={() => Alert.alert(
+            'Alert Title',
+            rowData.name,
+          )}>
+        <View style={GListViewDemostyles.cellViewStyle}>
+          {/*左边的图片*/}
+          <Image source={{uri: rowData.image}} style={GListViewDemostyles.leftImageStyle}/>
+          {/*右边的View*/}
+          <View style={GListViewDemostyles.rightViewStyle}>
+            {/*上边的Text*/}
+            <Text style={GListViewDemostyles.topTitleStyle}>{rowData.name}</Text>
+            {/*下边的Text*/}
+            <Text style={GListViewDemostyles.bottomTitleStyle}>¥{rowData.money}</Text>
+            </View>
+            </View>
+            </TouchableOpacity>
+       );
+}
+
+});
+
+const GListViewDemostyles = StyleSheet.create({
+    cellViewStyle:{
+        padding:10,
+        backgroundColor:'white',
+        // 下划线
+        borderBottomWidth:0.5,
+        borderBottomColor:'#e8e8e8',
+
+        // 确定主轴的方向
+        flexDirection:'row'
+    },
+
+    leftImageStyle:{
+        width:60,
+        height:60,
+        marginRight:15
+    },
+
+    rightViewStyle:{
+        // 主轴的对齐方式
+        justifyContent:'center'
+    },
+
+    topTitleStyle:{
+        color:'red',
+        fontSize:15,
+        width:width * 0.7,
+        marginBottom:8
+    },
+
+    bottomTitleStyle:{
+        color:'blue',
+    }
+});
+/******************************************************************/
+var Dimensions = require('Dimensions');
+var screenWidth = Dimensions.get('window').width;
+
+// 导入json数据
+var shareData = require('./shareData.json');
+
+// 一些常量设置
+var cols = 3;
+var cellWH = 100;
+var vMargin = (screenWidth - cellWH * cols) / (cols + 1);
+var hMargin = 25;
+
+
+// ES5
+var AListViewDemo = React.createClass({
+    // 设置默认值,固定值()
+    getDefaultProps(){
+        return{
+
+        }
+    },
+
+    // 设置一些初始值(可以变化)
+    getInitialState(){
+        // 创建数据源
+        var ds = new ListView.DataSource({rowHasChanged:(r1, r2) => r1 !== r2});
+        return{
+            dataSource: ds.cloneWithRows(shareData.data)
+        }
+    },
+
+    render(){
+        return(
+            <ListView
+              dataSource={this.state.dataSource}
+              renderRow={this.renderRow}
+              contentContainerStyle={AListViewDemoStyle.listViewStyle}
+          />
+      );
+},
+
+// 单独的cell
+renderRow(rowData){
+    return(
+        <TouchableOpacity activeOpacity={0.5} onPress={()=>{
+           NativeModules.MyMapIntentModule.startActivityByClassname('com.awesomeproject3.ControlPCActivity') 
+           }}>
+          <View style={AListViewDemoStyle.innerViewStyle}>
+              <Image source={{uri: rowData.icon}} style={AListViewDemoStyle.iconStyle}/>
+              <Text>{rowData.title}</Text>
+          </View>
+        </TouchableOpacity>
+     );
+}
+
+});
+
+
+const AListViewDemoStyle = StyleSheet.create({
+    listViewStyle:{
+        // 改变主轴的方向
+        flexDirection:'row',
+        // 多行显示
+        flexWrap:'wrap',
+        alignItems:'flex-start'
+    },
+
+    iconStyle:{
+        width:80,
+        height:80
+    },
+
+    innerViewStyle:{
+        width:cellWH,
+        height:cellWH,
+        marginLeft:vMargin,
+        marginTop:hMargin,
+
+        // 居中
+        alignItems:'center'
+    }
+});
+/****************************************************************/
+var Car=require('./Car.json');
+
+var BListViewDemo=React.createClass({
+    getInitialState(){
+        var getSectionData=(dataBlob,sectionID)=>{
+            return dataBlob[sectionID]
+        };
+        var getRowData=(dataBlob,sectionID,rowID)=>{
+            return dataBlob[sectionID+':'+rowID];
+        };
+        return{
+            dataSource:new ListView.DataSource({
+                getSectionData:getSectionData,
+                getRowData:getRowData,
+                rowHasChanged:(r1, r2)=>r1 !==r2,
+                sectionHeaderHasChanged:(s1, s2)=>s1 !==s2
+            })
+        }
+    },
+    render(){
+        return(
+             <View style={BListViewDemostyles.outerViewStyle}>
+               {/*头部*/}
+               <View style={BListViewDemostyles.headerViewStyle}>
+                   <Text style={{color:'white', fontSize:25}}>SeeMyGo品牌</Text>
+               </View>
+                {/*ListView*/}
+                <ListView
+                dataSource={this.state.dataSource}
+                renderRow={this.renderRow}
+                renderSectionHeader={this.renderSectionHeader}
+                />
+                </View>
+            );
+       },
+            renderRow(rowData){
+            return(
+                <TouchableOpacity activeOpacity={0.5}>
+                    <View style={BListViewDemostyles.rowStyle}>
+                        <Image source={{uri:rowData.icon}} style={BListViewDemostyles.rowImageStyle}/>
+                        <Text style={{marginLeft:5}}>{rowData.name}</Text>
+                    </View>
+                </TouchableOpacity>
+                );
+        },
+        renderSectionHeader(sectionData, sectionID){
+            return(
+                <View style={BListViewDemostyles.sectionHeaderViewStyle}>
+                    <Text style={{marginLeft:5, color:'red'}}>{sectionData}</Text>
+                </View>
+                  );
+       },
+    componentDidMount(){
+        this.loadDataFromJson();
+    },
+    loadDataFromJson(){
+        var jsonData=Car.data;
+        var dataBlob={},
+            selectionIDs=[],
+            rowIDs=[]
+            cars=[];
+
+        for(var i=0;i<jsonData.length;i++){
+            selectionIDs.push(i);
+            dataBlob[i]=jsonData[i].title;
+            cars=jsonData[i].cars;
+            rowIDs[i]=[];
+
+            for(var j=0;j<cars.length;j++){
+                rowIDs[i].push(j);
+
+                dataBlob[i+':'+j]=cars[j];
+            }
+        }
+        this.setState({
+          dataSource:this.state.dataSource.cloneWithRowsAndSections(dataBlob,selectionIDs,rowIDs)
+        });
+    }
+});
+    // 设置样式
+    const  BListViewDemostyles = StyleSheet.create({
+        outerViewStyle:{
+            //占满窗口
+            flex:1
+        },
+
+        headerViewStyle:{
+            height:64,
+            backgroundColor:'orange',
+
+            justifyContent:'center',
+            alignItems:'center'
+        },
+
+        rowStyle:{
+            // 设置主轴的方向
+            flexDirection:'row',
+            // 侧轴方向居中
+            alignItems:'center',
+            padding:10,
+
+            borderBottomColor:'#e8e8e8',
+            borderBottomWidth:0.5
+        },
+
+        rowImageStyle:{
+            width:70,
+            height:70,
+        },
+
+        sectionHeaderViewStyle:{
+            backgroundColor:'#e8e8e8',
+            height:25,
+
+            justifyContent:'center'
+        }
+    });
+AppRegistry.registerComponent('AwesomeProject3', () => BListViewDemo);
