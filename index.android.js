@@ -649,4 +649,4 @@ var BListViewDemo=React.createClass({
             justifyContent:'center'
         }
     });
-AppRegistry.registerComponent('AwesomeProject3', () => BListViewDemo);
+    AppRegistry.registerComponent('AwesomeProject3', () => BListViewDemo);
